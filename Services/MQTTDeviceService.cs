@@ -7,12 +7,13 @@ using Utilities.Logging;
 
 namespace Services
 {
-    public class MQTTDeviceService : DeviceService
+    public class MQTTDeviceService(
+        IAquariumLogger logger,
+        IUnitOfWork uow,
+        IDeviceRepository repo,
+        IGlobalService service)
+        : DeviceService(logger, uow, repo, service)
     {
-        public MQTTDeviceService(IAquariumLogger logger, IUnitOfWork uow, IDeviceRepository repo, IGlobalService service) : base(logger, uow, repo, service)
-        {
-        }
-
         public override async Task<bool> Validate(Device entry)
         {
             if (entry.GetType() == typeof(MQTTDevice))

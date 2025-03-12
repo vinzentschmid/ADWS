@@ -6,7 +6,6 @@ namespace Tests
     public class ModbusDeviceTest : BasisTest
     {
 
-
         [Test]
         public async Task ReadModbus()
         {

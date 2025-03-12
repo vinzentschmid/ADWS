@@ -29,19 +29,20 @@ namespace Services.Drivers
         }
 
 
-        public async override Task Connect()
+        public override async Task Connect()
         {
             try
             {
-              
-
                 log.Information("Created Client - trying to connect to {Url}", FinalUrl);
-
-            //Connect Here
+                
+                var port = int.Parse(Source.SlaveID.ToString() + Source.Port.ToString());                Client = new TcpClient(Source.Host, port);
+                Master = ModbusIpMaster.CreateIp(Client);
 
                 FetchTimer = new System.Timers.Timer(10000);
                 FetchTimer.Enabled = true;
                 FetchTimer.Elapsed += FetchTimer_Elapsed;
+                
+                IsConnected = true;
 
                 await Read();
 
@@ -123,8 +124,7 @@ namespace Services.Drivers
                 }
             }
         }
-
-
+        
         private NumericSample DecodeNumeric(ushort[] register, ModbusDataPoint pt)
         {
             NumericSample sample = new NumericSample();
@@ -188,23 +188,27 @@ namespace Services.Drivers
             {
                 if (pt.RegisterType == RegisterType.Coil)
                 {
-                  // Read Coil
+                   var coilValues = await Master.ReadCoilsAsync(start, offset);
+                   rsample = new BinarySample { Value = coilValues[0] };
 
 
                 }
                 else if (pt.RegisterType == RegisterType.InputStatus)
                 {
-                   // Read Input Status
+                   var inputStatusValues = await Master.ReadInputsAsync(start, offset);
+                   rsample = new BinarySample { Value = inputStatusValues[0] };
 
                 }
                 else if (pt.RegisterType == RegisterType.InputRegister)
                 {
-                   //Read Input Register
+                   var inputRegisterValues = await Master.ReadInputRegistersAsync(start, offset); 
+                   rsample = DecodeNumeric(inputRegisterValues, pt);
                 }
                 else if (pt.RegisterType == RegisterType.HoldingRegister)
                 {
 
-                    // Read Holding Register
+                    var holdingRegisterValues = await Master.ReadHoldingRegistersAsync(start, offset);
+                    rsample = DecodeNumeric(holdingRegisterValues, pt);
 
                 }
 
